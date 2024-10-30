@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - logicalFilePath: db/changelog
+  - include:
+      file: initial/changelog-initial.xml
+      relativeToChangelogFile: true

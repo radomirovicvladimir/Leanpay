@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - logicalFilePath: db/changelog
+  - include:
+      file: db-changelog-loan_calculation.xml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-payment_schedule.xml
+      relativeToChangelogFile: true
