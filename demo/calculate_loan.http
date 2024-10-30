@@ -1,0 +1,8 @@
+POST localhost:8080/api/loans/calculate
+Content-Type: application/json
+
+{
+  "amount": 252000.00,
+  "annualInterestRate": 6.5,
+  "numberOfMonths": 60
+}

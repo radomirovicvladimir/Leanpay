@@ -1,0 +1,45 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet author="your_name" id="initial-01">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="loan_calc_seq"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="loan_calc_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet author="your_name" id="initial-02">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="loan_calculation"/>
+            </not>
+        </preConditions>
+        <createTable tableName="loan_calculation" remarks="Table for loan calculation data">
+            <column name="id" type="NUMBER(19,0)" remarks="Primary Key">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="loan_calculation_pk"/>
+            </column>
+            <column name="amount" type="NUMBER(19,2)" remarks="Loan Amount">
+                <constraints nullable="false"/>
+            </column>
+            <column name="annual_interest_rate" type="NUMBER(5,2)" remarks="Annual Interest Rate">
+                <constraints nullable="false"/>
+            </column>
+            <column name="number_of_months" type="NUMBER(10,0)" remarks="Number of Months">
+                <constraints nullable="false"/>
+            </column>
+            <column name="request_date_time" type="TIMESTAMP" remarks="Request Date and Time">
+                <constraints nullable="false"/>
+            </column>
+            <column name="calculation_result" type="CLOB" remarks="Calculation Result"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

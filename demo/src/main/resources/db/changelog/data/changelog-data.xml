@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet author="your_name" id="data-01">
+        <insert tableName="loan_calculation" schemaName="LOAN_CALC_SCHEMA">
+            <column name="id" valueComputed="LOAN_CALC_SCHEMA.loan_calc_seq.NEXTVAL"/>
+            <column name="amount" value="1000"/>
+            <column name="annual_interest_rate" value="5"/>
+            <column name="number_of_months" value="10"/>
+            <column name="request_date_time" valueDate="CURRENT_TIMESTAMP"/>
+            <column name="calculation_result" value="Sample calculation result"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
+
