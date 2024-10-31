@@ -14,8 +14,9 @@ public class PaymentSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "calculation_id")
-    private Long calculationId;
+    @ManyToOne
+    @JoinColumn(name = "loan_calculation_id", nullable = false)
+    private LoanCalculation loanCalculation;
 
     @Column(name = "month_number")
     private int monthNumber;

@@ -15,7 +15,6 @@ public class LoanCalculationResponse {
     private BigDecimal annualInterestRate;
     private int numberOfMonths;
     private BigDecimal monthlyInstallment;
-    private BigDecimal totalInterest;
     private BigDecimal totalPayment;
     private List<MonthlyPayment> paymentSchedule;
 
