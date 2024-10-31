@@ -8,6 +8,7 @@ import org.leanpay.demo.persistence.repository.LoanCalculationRepository;
 import org.leanpay.demo.persistence.repository.PaymentScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,16 +25,26 @@ public class LoanCalculationService {
     @Autowired
     private PaymentScheduleRepository paymentScheduleRepository;
 
+    @Transactional
     public LoanCalculationResponse calculateLoan(LoanCalculationRequest request) {
         BigDecimal monthlyInterestRate = request.getAnnualInterestRate()
                 .divide(BigDecimal.valueOf(12), 10, RoundingMode.HALF_UP)
                 .divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP);
 
-        BigDecimal monthlyInstallment = calculateMonthlyInstallment(
-                request.getAmount(),
-                monthlyInterestRate,
-                request.getNumberOfMonths()
-        );
+        BigDecimal monthlyInstallment = request.getAmount()
+                .multiply(monthlyInterestRate)
+                .multiply(BigDecimal.ONE.add(monthlyInterestRate).pow(request.getNumberOfMonths()))
+                .divide(BigDecimal.ONE.add(monthlyInterestRate).pow(request.getNumberOfMonths()).subtract(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+
+        BigDecimal totalPayment = monthlyInstallment.multiply(BigDecimal.valueOf(request.getNumberOfMonths()));
+
+        LoanCalculation loanCalculation = new LoanCalculation();
+        loanCalculation.setAmount(request.getAmount());
+        loanCalculation.setAnnualInterestRate(request.getAnnualInterestRate());
+        loanCalculation.setNumberOfMonths(request.getNumberOfMonths());
+        loanCalculation.setMonthlyInstallment(monthlyInstallment);
+        loanCalculation.setTotalPayment(totalPayment);
+        loanCalculation.setRequestTimestamp(LocalDateTime.now());
 
         List<LoanCalculationResponse.MonthlyPayment> paymentSchedule = generatePaymentSchedule(
                 request.getAmount(),
@@ -42,24 +53,10 @@ public class LoanCalculationService {
                 monthlyInstallment
         );
 
-        BigDecimal totalPayment = monthlyInstallment.multiply(BigDecimal.valueOf(request.getNumberOfMonths()));
-        BigDecimal totalInterest = totalPayment.subtract(request.getAmount());
-
-        LoanCalculation loanCalculation = new LoanCalculation();
-        loanCalculation.setAmount(request.getAmount());
-        loanCalculation.setAnnualInterestRate(request.getAnnualInterestRate());
-        loanCalculation.setNumberOfMonths(request.getNumberOfMonths());
-        loanCalculation.setMonthlyInstallment(monthlyInstallment);
-        loanCalculation.setTotalInterest(totalInterest);
-        loanCalculation.setTotalPayment(totalPayment);
-        loanCalculation.setRequestTimestamp(LocalDateTime.now());
-
-        loanCalculation = loanCalculationRepository.save(loanCalculation);
-
         List<PaymentSchedule> paymentSchedules = new ArrayList<>();
         for (LoanCalculationResponse.MonthlyPayment payment : paymentSchedule) {
             PaymentSchedule schedule = new PaymentSchedule();
-            schedule.setCalculationId(loanCalculation.getId());
+            schedule.setLoanCalculation(loanCalculation); // Set the parent LoanCalculation
             schedule.setMonthNumber(payment.getMonthNumber());
             schedule.setPaymentAmount(payment.getPaymentAmount());
             schedule.setPrincipalPaid(payment.getPrincipalPaid());
@@ -68,30 +65,21 @@ public class LoanCalculationService {
 
             paymentSchedules.add(schedule);
         }
-        paymentScheduleRepository.saveAll(paymentSchedules);
+
+        loanCalculation.setPaymentSchedules(paymentSchedules);
+        loanCalculationRepository.save(loanCalculation);
 
         LoanCalculationResponse response = new LoanCalculationResponse();
         response.setAmount(request.getAmount());
         response.setAnnualInterestRate(request.getAnnualInterestRate());
         response.setNumberOfMonths(request.getNumberOfMonths());
         response.setMonthlyInstallment(monthlyInstallment);
-        response.setTotalInterest(totalInterest);
         response.setTotalPayment(totalPayment);
         response.setPaymentSchedule(paymentSchedule);
 
         return response;
     }
 
-    private BigDecimal calculateMonthlyInstallment(BigDecimal principal, BigDecimal monthlyInterestRate, int numberOfMonths) {
-        if (monthlyInterestRate.compareTo(BigDecimal.ZERO) == 0) {
-            return principal.divide(BigDecimal.valueOf(numberOfMonths), 2, RoundingMode.HALF_UP);
-        } else {
-            BigDecimal numerator = principal.multiply(monthlyInterestRate)
-                    .multiply(BigDecimal.ONE.add(monthlyInterestRate).pow(numberOfMonths));
-            BigDecimal denominator = BigDecimal.ONE.add(monthlyInterestRate).pow(numberOfMonths).subtract(BigDecimal.ONE);
-            return numerator.divide(denominator, 2, RoundingMode.HALF_UP);
-        }
-    }
 
     private List<LoanCalculationResponse.MonthlyPayment> generatePaymentSchedule(BigDecimal principal, BigDecimal monthlyInterestRate,
                                                                                  int numberOfMonths, BigDecimal monthlyInstallment) {

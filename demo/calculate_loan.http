@@ -1,8 +1,9 @@
-POST localhost:8080/api/loans/calculate
+POST http://localhost:8080/api/loans/calculate
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzMwMzUxODE2LCJleHAiOjE3MzAzNTU0MTZ9.wh4nFn79cgnz3z8yOyc-f4ZjEEUs8B1FZbjh2ySdByQ
 
 {
-  "amount": 252000.00,
-  "annualInterestRate": 6.5,
-  "numberOfMonths": 60
+  "amount": 1000.00,
+  "annualInterestRate": 5,
+  "numberOfMonths": 10
 }

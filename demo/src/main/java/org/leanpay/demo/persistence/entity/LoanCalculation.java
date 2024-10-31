@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -26,13 +27,13 @@ public class LoanCalculation {
     @Column(name = "monthly_installment")
     private BigDecimal monthlyInstallment;
 
-    @Column(name = "total_interest")
-    private BigDecimal totalInterest;
-
     @Column(name = "total_payment")
     private BigDecimal totalPayment;
 
     @Column(name = "request_timestamp")
     private LocalDateTime requestTimestamp;
+
+    @OneToMany(mappedBy = "loanCalculation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentSchedule> paymentSchedules;
 
 }
